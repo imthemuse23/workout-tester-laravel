@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -45,4 +46,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function workouts()
+    {
+        return $this->belongsToMany(Workout::class, 'user_workouts', 'user_id', 'workout_id')
+            ->withPivot(['remaining_time', 'is_paused', 'completed', 'started_at', 'paused_at'])
+            ->withTimestamps();
+    }
+
 }
