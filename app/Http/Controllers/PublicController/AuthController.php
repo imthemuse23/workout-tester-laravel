@@ -36,13 +36,13 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'string',
-                'min:6',
+                'min:8',
                 'regex:/^(?=.*[a-z])(?=.*\d)(?=.*[\W_]).+$/',
                 'confirmed',
             ],
         ], [
             // Custom error messages
-            'password.min' => 'Password must be at least 6 characters.',
+            'password.min' => 'Password must be at least 8 characters.',
             'password.regex' => 'Password must contain at least one lowercase letter, one number, and one symbol.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);
