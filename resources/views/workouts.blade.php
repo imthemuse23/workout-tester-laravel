@@ -25,8 +25,8 @@
                 {{-- Nama workout --}}
                 <h2
                     class="text-lg font-semibold mb-1
-                           bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-300
-                           bg-clip-text text-transparent">
+                        bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-300
+                        bg-clip-text text-transparent">
                     {{ $workout->workout_name }}
                 </h2>
                 <p class="text-gray-600 mb-2 line-clamp-3">{{ $workout->description }}</p>

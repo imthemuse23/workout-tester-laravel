@@ -68,7 +68,7 @@ class HomeController extends Controller
             ]);
         }
 
-        return redirect()->route('my-activity')->with('success', 'Workout berhasil ditambahkan!');
+        return redirect()->route('my-activity')->with('success', 'Workout successfully added!');
     }
 
     public function updateTimer(Request $request)
@@ -98,7 +98,7 @@ class HomeController extends Controller
 
         $user->workouts()->detach($workout->id); // hapus pivot record
 
-        return redirect()->route('my-activity')->with('success', 'Workout berhasil dihapus!');
+        return redirect()->route('my-activity')->with('success', 'Workout successfully deleted!');
     }
 
     // profile
@@ -122,6 +122,6 @@ class HomeController extends Controller
             'email' => $request->email,
         ]);
 
-        return redirect()->route('profile')->with('success', 'Profile berhasil diperbarui!');
+        return redirect()->route('profile')->with('success', 'Profile successfully updated!');
     }
 }

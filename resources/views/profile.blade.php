@@ -38,9 +38,11 @@
                 {{-- Name --}}
                 <div class="mb-4">
                     <label class="block font-medium text-gray-700 mb-1">Name</label>
-                    <input type="text" name="name" x-model="name" placeholder="Your name"
+                    <input type="text" name="name" x-model="name" placeholder="Your name" maxlength="20"
+                        pattern="^[a-z][a-z\s]{0,19}$"
+                        title="Must start with a lowercase letter and max 20 characters (letters and spaces only)"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        :readonly="!editing">
+                        :readonly="!editing" required>
                     @error('name')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror

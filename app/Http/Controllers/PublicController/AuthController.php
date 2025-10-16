@@ -20,8 +20,13 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => [
+            'name' => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^[a-z\s]+$/', // Hanya huruf kecil dan spasi
+            ],
+            'email' => [
                 'required',
                 'string',
                 'email',
@@ -36,19 +41,23 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'string',
-                'min:8',
-                'regex:/^(?=.*[a-z])(?=.*\d)(?=.*[\W_]).+$/',
+                'min:6',
+                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{6,}$/',
                 'confirmed',
             ],
         ], [
-            // Custom error messages
-            'password.min' => 'Password must be at least 8 characters.',
-            'password.regex' => 'Password must contain at least one lowercase letter, one number, and one symbol.',
-            'password.confirmed' => 'Password confirmation does not match.',
+            'name.required' => 'Name is required.',
+            'name.max' => 'Name must contain a maximum of 20 characters.',
+            'name.regex' => 'Name must contain only lowercase letters and spaces.',
+            'password.min' => 'Password must be at least 6 characters.',
+            'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one symbol.',
+            'password.confirmed' => 'Password confirmation does not match.'
         ]);
 
+
+
         // Assign role automatically
-        $role = $request->email === 'admin@gmail.com' ? 'admin' : 'user';
+        $role = $request->email === 'adminworkout@gmail.com' ? 'admin' : 'user';
 
         User::create([
             'name'     => $request->name,

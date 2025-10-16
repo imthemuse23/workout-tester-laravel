@@ -36,7 +36,7 @@ class AdminController extends Controller
         $user = User::where('role', 'user')->findOrFail($id);
         $user->delete();
 
-        return redirect()->route('admin.users')->with('success', 'User berhasil dihapus.');
+        return redirect()->route('admin.users')->with('success', 'User has been successfully deleted.');
     }
 
     // workouts
@@ -57,13 +57,16 @@ class AdminController extends Controller
     public function storeWorkout(Request $request)
     {
         $request->validate([
-            'workout_name' => 'required|string|max:255',
-            'description'  => 'nullable|string',
+            'workout_name' => 'required|string|max:20|regex:/^[a-zA-Z\s]+$/',
+            'description'  => 'nullable|string|max:200|regex:/^[a-zA-Z\s]+$/',
             'duration'     => 'required|integer|min:1',
             'difficulty'   => 'required|in:Beginner,Intermediate,Advanced',
             'categories'   => 'array',
             'categories.*' => 'exists:categories,id',
             'image'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'workout_name.regex' => 'Nama Workout hanya boleh huruf dan spasi.',
+            'description.regex'  => 'Deskripsi hanya boleh huruf dan spasi.',
         ]);
 
         $data = $request->only(['workout_name', 'description', 'duration', 'difficulty']);
@@ -79,62 +82,85 @@ class AdminController extends Controller
             $workout->categories()->sync($request->categories);
         }
 
-        return redirect()->route('admin.workouts')->with('success', 'Workout berhasil ditambahkan.');
+        return redirect()->route('admin.workouts')->with('success', 'Workout successfully added.');
     }
 
     public function updateWorkout(Request $request, $id)
     {
-        $request->validate([
-            'workout_name' => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'duration'     => 'required|integer|min:1',
-            'difficulty'   => 'required|in:Beginner,Intermediate,Advanced',
-            'categories'   => 'nullable|array',
-            'categories.*' => 'exists:categories,id',
-            'image'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'remove_image' => 'nullable|boolean',
-        ]);
+        try {
+            $request->validate([
+                'workout_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^[^\d]+$/', // tidak boleh mengandung angka
+                ],
+                'description'  => [
+                    'nullable',
+                    'string',
+                    'regex:/^[^\d]+$/', // tidak boleh mengandung angka
+                ],
+                'duration'     => 'required|integer|min:1',
+                'difficulty'   => 'required|in:Beginner,Intermediate,Advanced',
+                'categories'   => 'nullable|array',
+                'categories.*' => 'exists:categories,id',
+                'image'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'remove_image' => 'nullable|boolean',
+            ], [
+                'workout_name.required' => 'Workout name is required.',
+                'workout_name.regex'    => 'Workout name cannot contain numbers.',
+                'description.regex'     => 'Description cannot contain numbers.',
+                'duration.required'     => 'Duration is required.',
+                'duration.integer'      => 'Duration must be a number.',
+                'difficulty.required'   => 'Please select a difficulty level.',
+            ]);
 
-        $workout = Workout::findOrFail($id);
+            $workout = Workout::findOrFail($id);
 
-        // Hapus gambar lama jika diminta
-        if ($request->boolean('remove_image')) {
-            if ($workout->image && Storage::disk('public')->exists($workout->image)) {
-                Storage::disk('public')->delete($workout->image);
+            // Hapus gambar lama jika diminta
+            if ($request->boolean('remove_image')) {
+                if ($workout->image && Storage::disk('public')->exists($workout->image)) {
+                    Storage::disk('public')->delete($workout->image);
+                }
+                $workout->image = null;
             }
-            $workout->image = null;
-        }
 
-        // Upload gambar baru jika ada
-        if ($request->hasFile('image')) {
-            // hapus gambar lama
-            if ($workout->image && Storage::disk('public')->exists($workout->image)) {
-                Storage::disk('public')->delete($workout->image);
+            // Upload gambar baru jika ada
+            if ($request->hasFile('image')) {
+                // hapus gambar lama
+                if ($workout->image && Storage::disk('public')->exists($workout->image)) {
+                    Storage::disk('public')->delete($workout->image);
+                }
+                $workout->image = $request->file('image')->store('workouts', 'public');
             }
-            $workout->image = $request->file('image')->store('workouts', 'public');
+
+            // Update field dasar + difficulty
+            $workout->workout_name = $request->workout_name;
+            $workout->description  = $request->description;
+            $workout->duration     = $request->duration;
+            $workout->difficulty   = $request->difficulty;
+            $workout->save();
+
+            // Sync kategori (jika tidak ada input, kosongkan relasi)
+            $workout->categories()->sync($request->input('categories', []));
+
+            return redirect()->route('admin.workouts')->with('success', 'Workout updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Jika validasi gagal → balik ke halaman sebelumnya + modal tetap terbuka
+            return redirect()
+                ->back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('show_edit_modal', true);
         }
-
-        // Update field dasar + difficulty
-        $workout->workout_name = $request->workout_name;
-        $workout->description  = $request->description;
-        $workout->duration     = $request->duration;
-        $workout->difficulty   = $request->difficulty;
-        $workout->save();
-
-        // Sync kategori (jika tidak ada input, kosongkan relasi)
-        $workout->categories()->sync($request->input('categories', []));
-
-        return redirect()->route('admin.workouts')->with('success', 'Workout berhasil diperbarui.');
     }
-
-
 
     public function deleteWorkout($id)
     {
         $workout = Workout::findOrFail($id);
         $workout->delete();
 
-        return redirect()->route('admin.workouts')->with('success', 'Workout berhasil dihapus.');
+        return redirect()->route('admin.workouts')->with('success', 'Workout successfully deleted.');
     }
 
     // category
@@ -155,42 +181,48 @@ class AdminController extends Controller
     public function storeCategory(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
-            'description' => 'nullable|string',
+            'workout_name' => 'required|string|max:20|regex:/^[a-zA-Z\s]+$/',
+            'description'  => 'nullable|string|max:200|regex:/^[a-zA-Z\s]+$/',
+        ], [
+            'workout_name.regex' => 'Category name hanya boleh huruf dan spasi.',
+            'description.regex'  => 'Description hanya boleh huruf dan spasi.',
         ]);
 
         Category::create([
-            'name' => $request->name,
+            'name'        => $request->workout_name,
             'description' => $request->description,
         ]);
 
-        return redirect()->route('admin.categories')->with('success', 'Kategori berhasil ditambahkan.');
+        return redirect()->route('admin.categories')->with('success', 'Category added successfully.');
     }
 
-    // UPDATE: update kategori
+    // UPDATE
     public function updateCategory(Request $request, $id)
     {
         $category = Category::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-            'description' => 'nullable|string',
+            'workout_name' => 'required|string|max:20|regex:/^[a-zA-Z\s]+$/|unique:categories,name,' . $category->id,
+            'description'  => 'nullable|string|max:200|regex:/^[a-zA-Z\s]+$/',
+        ], [
+            'workout_name.regex' => 'Category name hanya boleh huruf dan spasi.',
+            'description.regex'  => 'Description hanya boleh huruf dan spasi.',
         ]);
 
         $category->update([
-            'name' => $request->name,
+            'name'        => $request->workout_name,
             'description' => $request->description,
         ]);
 
-        return redirect()->route('admin.categories')->with('success', 'Kategori berhasil diperbarui.');
+        return redirect()->route('admin.categories')->with('success', 'Category updated successfully.');
     }
 
-    // DELETE: hapus kategori
+    // DELETE
     public function deleteCategory($id)
     {
         $category = Category::findOrFail($id);
         $category->delete();
 
-        return redirect()->route('admin.categories')->with('success', 'Kategori berhasil dihapus.');
+        return redirect()->route('admin.categories')->with('success', 'Category successfully deleted.');
     }
 }

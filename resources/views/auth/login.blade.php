@@ -38,14 +38,50 @@
                 </div>
 
                 <!-- Password -->
-                <div>
+                <div class="relative">
                     <label class="block font-medium mb-1 text-gray-700">Password</label>
-                    <input type="password" name="password"
-                        class="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300">
+                    <input type="password" name="password" id="password"
+                        class="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-cyan-300 focus:border-cyan-300 pr-10">
+
+                    <!-- Eye icon -->
+                    <button type="button" id="togglePassword"
+                        class="absolute right-0 top-11 px-3 flex items-center text-gray-500 hover:text-gray-700">
+
+                        <!-- SVG eye -->
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+
                     @error('password')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
+
+                <script>
+                    const passwordInput = document.getElementById('password');
+                    const toggleBtn = document.getElementById('togglePassword');
+                    const eyeIcon = document.getElementById('eyeIcon');
+
+                    toggleBtn.addEventListener('click', function() {
+                        if (passwordInput.type === "password") {
+                            passwordInput.type = "text";
+                            // Ganti icon menjadi eye-off
+                            eyeIcon.innerHTML =
+                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.05 10.05 0 012.392-3.855m3.6-2.67A9.97 9.97 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.05 10.05 0 01-1.513 2.647M3 3l18 18"/>';
+                        } else {
+                            passwordInput.type = "password";
+                            // Kembalikan icon eye
+                            eyeIcon.innerHTML =
+                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+                        }
+                    });
+                </script>
+
 
                 <!-- Submit -->
                 <button type="submit"

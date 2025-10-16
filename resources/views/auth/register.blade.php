@@ -18,11 +18,12 @@
             <div>
                 <label class="block font-medium mb-1">Name</label>
                 <input type="text" name="name" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400"
-                    value="{{ old('name') }}">
+                    value="{{ old('name') }}" required>
                 @error('name')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
+
 
             <!-- Email -->
             <div>
@@ -35,20 +36,64 @@
             </div>
 
             <!-- Password -->
-            <div>
+            <div class="relative">
                 <label class="block font-medium mb-1">Password</label>
-                <input type="password" name="password"
-                    class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400">
+                <input type="password" name="password" id="registerPassword"
+                    class="w-full border rounded p-2 pr-10 focus:ring-2 focus:ring-blue-400">
+
+                <!-- Tombol toggle -->
+                <button type="button" id="toggleRegisterPassword"
+                    class="absolute right-0 top-10 px-3 flex items-center text-gray-500 hover:text-gray-700">
+                    <!-- Ikon eye -->
+                    <svg id="registerEyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
+
                 @error('password')
                     <span class="text-red-600 text-sm">{{ $message }}</span>
                 @enderror
             </div>
+
+            <script>
+                const registerPasswordInput = document.getElementById('registerPassword');
+                const toggleRegisterBtn = document.getElementById('toggleRegisterPassword');
+                const registerEyeIcon = document.getElementById('registerEyeIcon');
+
+                toggleRegisterBtn.addEventListener('click', function() {
+                    if (registerPasswordInput.type === 'password') {
+                        registerPasswordInput.type = 'text';
+                        registerEyeIcon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7
+                a10.05 10.05 0 012.392-3.855m3.6-2.67A9.97 9.97 0 0112 5c4.477 0
+                8.268 2.943 9.542 7a10.05 10.05 0 01-1.513 2.647M3 3l18 18"/>`;
+                    } else {
+                        registerPasswordInput.type = 'password';
+                        registerEyeIcon.innerHTML = `
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0
+                8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7
+                -4.477 0-8.268-2.943-9.542-7z" />`;
+                    }
+                });
+            </script>
+
 
             <!-- Confirm Password -->
             <div>
                 <label class="block font-medium mb-1">Confirm Password</label>
                 <input type="password" name="password_confirmation"
                     class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-400">
+                @error('password_confirmation')
+                    <span class="text-red-600 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
             <!-- Submit -->
